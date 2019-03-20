@@ -1,38 +1,7 @@
-package com.example.jorch.svmovil.ModulosYHelpers;
-
-import android.Manifest;
-import android.app.ProgressDialog;
-import android.content.Context;
-import android.content.DialogInterface;
-import android.content.pm.PackageManager;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
-import android.os.Environment;
-import android.provider.Settings;
-import android.support.v4.app.ActivityCompat;
-import android.telephony.TelephonyManager;
-import android.util.Log;
-import android.widget.Spinner;
-
-import com.example.jorch.svmovil.Entrega_Boletos;
-import com.example.jorch.svmovil.MyApplication;
-
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-
-import static android.support.v4.app.ActivityCompat.requestPermissions;
-
-/**
- * Created by infraestructurasorteostec on 14/03/18.
- */
-
-public class FuncionesGlobales {
-    public static int tryParseInt(String value) {
+public class FuncionesGlobales
+{
+    public static int tryParseInt(String value)
+    {
         try {
             return Integer.parseInt(value);
         } catch (NumberFormatException nfe) {
@@ -41,7 +10,35 @@ public class FuncionesGlobales {
         }
     }
 
-    public static void EnviarMensaje(String mje, String titulo, Context CXT, ProgressDialog pd) {
+    public static Double tryParseDouble(String value)
+    {
+        try
+        {
+            return Double.valueOf(value);
+        }
+        catch(NumberFormatException nfe) {
+            return 0.0;
+        }
+    }
+
+    public static boolean isPrimitive(String value)
+    {
+        boolean status=true;
+        if(value.length()<1)
+            return false;
+        for(int i = 0;i<value.length();i++){
+            char c=value.charAt(i);
+            if(Character.isDigit(c) || c=='.'){
+
+            }else{
+                status=false;
+                break;
+            }
+        }
+        return status;
+    }
+
+    public static void CreateMessageDialog(String mje, String titulo, Context CXT, ProgressDialog pd) {
         android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(CXT);
         String texto = mje;
         builder.setMessage(texto)
@@ -56,19 +53,8 @@ public class FuncionesGlobales {
             alert.show();
         }
     }
-
-    public static String generarInicioTituloPAOPDA(String prefijo, String idPlan) {
-        String tituloFinal = "";
-        String idPlanCeros = "";
-        for (int i = idPlan.length(); i < 10; i++) {
-            idPlanCeros = idPlanCeros + "0";
-        }
-        tituloFinal = prefijo + idPlanCeros;
-        return tituloFinal;
-    }
-
-    //--- Metodo para seleccionar la opcion de los spinners
-    public static int ObtenerDatoPorValor(Spinner spinner, String myString) {
+ 
+    public static int SelectByValue(Spinner spinner, String myString) {
         try {
             int index = 0;
             Log.e("string ", "valor: " + myString);
@@ -85,7 +71,7 @@ public class FuncionesGlobales {
         }
     }
 
-    public static boolean RevisarConexion(ConnectivityManager cm) throws ParseException {
+    public static boolean CheckConnection(ConnectivityManager cm) throws ParseException {
         //---- Validar conexion a internet
         if (cm.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).getState() == NetworkInfo.State.CONNECTED ||
                 cm.getNetworkInfo(ConnectivityManager.TYPE_WIFI).getState() == NetworkInfo.State.CONNECTED) {
@@ -95,8 +81,8 @@ public class FuncionesGlobales {
         }
     }
 
-    public static void GenerarLogError(String ErrorLog, String Metodo) {
-        String dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS).getPath() + "/Error_De_Servicio/";
+    public static void GenerateErrorLog(String ErrorLog, String Metodo) {
+        String dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS).getPath() + "/Error_Log/";
         File directory = new File(dir);
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd_MM_yyyy_HH_mm_ss");
         Date date = new Date();
@@ -112,7 +98,7 @@ public class FuncionesGlobales {
             e.printStackTrace();
         }
         try (FileWriter fileWriter = new FileWriter(file)) {
-            String finalErrorLog = "Metodo: " + Metodo + "\n\n" + ErrorLog;
+            String finalErrorLog = "Method: " + Metodo + "\n\n" + ErrorLog;
             fileWriter.append(finalErrorLog);
             fileWriter.flush();
             fileWriter.close();
@@ -121,8 +107,8 @@ public class FuncionesGlobales {
         }
     }
 
-    public static void GuardarExceptionLog(String descripcion, String Metodo, String Clase) {
-        String dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS).getPath() + "/Error_De_Aplicacion/";
+    public static void GenerateExceptionLog(String descripcion, String Metodo, String Clase) {
+        String dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS).getPath() + "/ApplicationError/";
         File directory = new File(dir);
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd_MM-HH_mm");
         Date date = new Date();
@@ -147,9 +133,99 @@ public class FuncionesGlobales {
         }
     }
 
-    public static String ObtenerIMEI() {
+    public static String GetIMEI() {
         String imei = "";
         imei = Settings.Secure.getString(MyApplication.getContext().getContentResolver(), Settings.Secure.ANDROID_ID);
         return imei;
+    }
+
+    public static String getStackTrace(final Throwable throwable) {
+        final StringWriter sw = new StringWriter();
+        final PrintWriter pw = new PrintWriter(sw, true);
+        throwable.printStackTrace(pw);
+        return sw.getBuffer().toString();
+    }
+
+    public static String Normalize(String texto) {
+        String convertedString = Normalizer
+                .normalize(texto, Normalizer.Form.NFD)
+                .replaceAll("[^\\p{ASCII}]", "");//.replaceAll("&(?!amp;)", "&amp;");
+        String convertedFinal = StringEscapeUtils.escapeHtml4(convertedString);
+        return convertedFinal;
+    }
+
+    public static void PrintLongString(String veryLongString)
+    {
+        int maxLogSize = 1000;
+        for(int i = 0; i <= veryLongString.length() / maxLogSize; i++) {
+            int start = i * maxLogSize;
+            int end = (i+1) * maxLogSize;
+            end = end > veryLongString.length() ? veryLongString.length() : end;
+            Log.v("next", " " + veryLongString.substring(start, end));
+        }
+    }
+
+    public static String ConvertToValidDate(String fecha)
+    {
+        SimpleDateFormat formatoFecha = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss aaa",Locale.US);
+        String fechaValida = "";
+        try {
+            fechaValida = TextUtils.isEmpty(fecha) ? formatoFecha.format(new Date()) : formatoFecha.parse(new Date(fecha).toString()).toString();
+        } catch (Exception e) {
+            return formatoFecha.format(new Date());
+        }
+        fecha = fechaValida    ;
+
+        return fecha;
+    }
+
+    public static void hideSoftKeyboard(Activity activity)
+    {
+        InputMethodManager inputMethodManager =
+                (InputMethodManager) activity.getSystemService(
+                        Activity.INPUT_METHOD_SERVICE);
+        inputMethodManager.hideSoftInputFromWindow(
+                activity.getCurrentFocus().getWindowToken(), 0);
+    }
+
+    public static String DeleteLastCharacter(String str)
+    {
+        return str.substring(0, str.length() - 1);
+    }
+
+    public static String AddZeroLeft(int numero)
+    {
+        String revisarValor;
+        try {
+             revisarValor = (numero <= 9) ? "0" + numero : String.valueOf(numero);
+        }
+        catch (Exception e)
+        {
+            return "00";
+        }
+        return revisarValor;
+    }
+
+    public static void DisableEditText(EditText editText)
+    {
+        editText.setFocusable(false);
+        editText.setEnabled(false);
+        editText.setCursorVisible(false);
+        editText.setKeyListener(null);
+    }
+
+    public static boolean between(int i, int minValueInclusive, int maxValueInclusive) {
+        return (i >= minValueInclusive && i <= maxValueInclusive);
+    }
+
+        public static boolean esAplicacionInstalada(String packageName, PackageManager packageManager) {
+
+        try {
+            packageManager.getPackageInfo(packageName, PackageManager.GET_ACTIVITIES);
+            return true;
+        } catch (PackageManager.NameNotFoundException e) {
+        }
+
+        return false;
     }
 }
